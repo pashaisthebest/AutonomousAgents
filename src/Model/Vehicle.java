@@ -14,10 +14,11 @@ public class Vehicle {
     private MVector acceleration;
     private MVector bounds;
     private MVector steer;
+    private MVector pointToFleeFrom;
     private Random r;
     private float hue;
-    private double angle, maxSpeed, maxForce, pointOnCircleAngle;
-    private int arriveDistanceistance, vehicleScale;
+    private double angle, maxSpeed, maxForce, pointOnCircleAngle, vehicleScale;
+    private int arriveDistanceistance ;
     private GeneralPath vehicleShape;
     
     public Vehicle(MVector _location, MVector _bounds){
@@ -32,21 +33,40 @@ public class Vehicle {
         velocity = new MVector();
         acceleration = new MVector();
         steer = new MVector();
+        pointToFleeFrom = new MVector();
         r = new Random();
         hue = r.nextFloat();
         vehicleShape = new GeneralPath();
     }
     
-    public void setScale(int scale){
+    public MVector getPointToFleeFrom() {
+        return pointToFleeFrom;
+    }
+
+    public void setPointToFleeFrom(MVector pointToFleeFrom) {
+        this.pointToFleeFrom = pointToFleeFrom;
+    }
+    
+    public double getScale(){
+        return vehicleScale;
+    }
+    
+    public void setScale(double scale){
         vehicleScale = scale;
     }
     
     public void setMaxSpeed(double speed){
         maxSpeed = speed;
     }
+    public double getMaxSpeed(){
+        return maxSpeed;
+    }
     
     public void setMaxForce(double force){
         maxForce = force;
+    }
+    public double getMaxForce(){
+        return maxForce;
     }
     
     public MVector getLocation() { return location; }
@@ -81,16 +101,12 @@ public class Vehicle {
         normilizedSpeed.Add(location);
         
         MVector desired = MVector.Subtract(normilizedSpeed, location);
-        //desired.Limit(maxSpeed);
-        
-        
-        
+        desired.Limit(maxSpeed);
+
         steer = MVector.Subtract(desired, velocity);
         steer.Limit(maxForce);
         ApplyForce(steer);
-        this.Update();
-        //System.out.print(String.format("\nlocation(%d,%d) pointoncircle(%d,%d)\n", (int)location.getX(), (int)location.getY(), (int)pointOnCircle.getX(), (int)pointOnCircle.getY()));
-        //return desired;
+        //this.Update();
     }
     
     public void Seek(MVector target){
@@ -99,7 +115,7 @@ public class Vehicle {
         steer = MVector.Subtract(desired, velocity);
         steer.Limit(maxForce);
         ApplyForce(steer);
-        this.Update();
+        //this.Update();
     }
     
     public void Flee(MVector target){
@@ -108,7 +124,7 @@ public class Vehicle {
         steer = MVector.Subtract(velocity, desired);
         steer.Limit(maxForce);
         ApplyForce(steer);
-        this.Update();
+        //this.Update();
     }
     
     public void Arrive(MVector target){
@@ -126,7 +142,49 @@ public class Vehicle {
         steer = MVector.Subtract(desired, velocity);
         steer.Limit(maxForce);
         ApplyForce(steer);
-        this.Update();
+        //this.Update();
+    }
+    
+    public boolean KeepInsideBoundaries(){
+        MVector desired = null;
+        
+        if (location.getX()>bounds.getX()-100){  
+            desired = new MVector(-maxSpeed, velocity.getY());
+            //location.setX(50);
+            //velocity.setX(velocity.getX() * -1);
+        }
+        else{
+            if(location.getX()<100){
+                desired = new MVector(maxSpeed, velocity.getY());
+                //location.setX(bounds.getX()-50);
+                //velocity.setX(velocity.getX() * -1);
+            }
+        }
+        if (location.getY()>bounds.getY()-100){
+            desired = new MVector(velocity.getX(), -maxSpeed);
+            //location.setY(50);
+            //velocity.setY(velocity.getY() * -1);
+        }
+        else{
+            if(location.getY()<100){
+                desired = new MVector(velocity.getX(), maxSpeed);
+                //location.setY(bounds.getY()-50);
+                //velocity.setY(velocity.getY() * -1);
+            }
+        }
+        
+        if (desired != null) {
+            
+            desired.Normalize();
+            desired.Multiply(maxSpeed);
+
+            steer = MVector.Subtract(desired, velocity);
+            steer.Limit(maxForce);
+            this.ApplyForce(steer);
+            
+            return true;
+        }
+        return false;
     }
     
     public void Update(){
@@ -135,27 +193,6 @@ public class Vehicle {
         velocity.Limit(maxSpeed);
         location.Add(velocity);
         acceleration.Multiply(0);
-        
-        if (location.getX()>bounds.getX()){  
-            location.setX(0);
-            //velocity.setX(velocity.getX() * -1);
-        }
-        else{
-            if(location.getX()<0){
-                location.setX(bounds.getX());
-                //velocity.setX(velocity.getX() * -1);
-            }
-        }
-        if (location.getY()>bounds.getY()){
-            location.setY(0);
-            //velocity.setY(velocity.getY() * -1);
-        }
-        else{
-            if(location.getY()<0){
-                location.setY(bounds.getY());
-                //velocity.setY(velocity.getY() * -1);
-            }
-        }
     }
     
     private void updateVehicleShape(){
@@ -173,4 +210,6 @@ public class Vehicle {
     private void ApplyForce(MVector force){
         this.acceleration.Add(force);
     }
+
+
 }
