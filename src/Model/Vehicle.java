@@ -106,10 +106,6 @@ public class Vehicle {
         steer = MVector.Subtract(desired, velocity);
         steer.Limit(maxForce);
         ApplyForce(steer);
-<<<<<<< HEAD
-=======
-        //this.Update();
->>>>>>> 05eb2e554a8fc5fcc0242eff26920f7f2c1038b3
     }
     
     public void Seek(MVector target){
@@ -118,10 +114,6 @@ public class Vehicle {
         steer = MVector.Subtract(desired, velocity);
         steer.Limit(maxForce);
         ApplyForce(steer);
-<<<<<<< HEAD
-=======
-        //this.Update();
->>>>>>> 05eb2e554a8fc5fcc0242eff26920f7f2c1038b3
     }
     
     public void Flee(MVector target){
@@ -154,41 +146,25 @@ public class Vehicle {
     public boolean KeepInsideBoundaries(){
         MVector desired = null;
         
-<<<<<<< HEAD
         if (location.getX()>bounds.getX()-40){  
-=======
-        if (location.getX()>bounds.getX()-100){  
->>>>>>> 05eb2e554a8fc5fcc0242eff26920f7f2c1038b3
             desired = new MVector(-maxSpeed, velocity.getY());
             //location.setX(50);
             //velocity.setX(velocity.getX() * -1);
         }
         else{
-<<<<<<< HEAD
             if(location.getX()<40){
-=======
-            if(location.getX()<100){
->>>>>>> 05eb2e554a8fc5fcc0242eff26920f7f2c1038b3
                 desired = new MVector(maxSpeed, velocity.getY());
                 //location.setX(bounds.getX()-50);
                 //velocity.setX(velocity.getX() * -1);
             }
         }
-<<<<<<< HEAD
         if (location.getY()>bounds.getY()-40){
-=======
-        if (location.getY()>bounds.getY()-100){
->>>>>>> 05eb2e554a8fc5fcc0242eff26920f7f2c1038b3
             desired = new MVector(velocity.getX(), -maxSpeed);
             //location.setY(50);
             //velocity.setY(velocity.getY() * -1);
         }
         else{
-<<<<<<< HEAD
             if(location.getY()<40){
-=======
-            if(location.getY()<100){
->>>>>>> 05eb2e554a8fc5fcc0242eff26920f7f2c1038b3
                 desired = new MVector(velocity.getX(), maxSpeed);
                 //location.setY(bounds.getY()-50);
                 //velocity.setY(velocity.getY() * -1);

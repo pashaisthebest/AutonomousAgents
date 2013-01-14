@@ -53,12 +53,6 @@ public class MovementPanel extends javax.swing.JPanel {
         
         Graphics2D g2D = (Graphics2D)g;
         g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-<<<<<<< HEAD
-=======
-        
-        saturation = 0.9f;    //1.0 for brilliant, 0.0 for dull
-        luminance = 1f;       //1.0 for brighter, 0.0 for black
->>>>>>> 05eb2e554a8fc5fcc0242eff26920f7f2c1038b3
         
         g2D.setColor(Color.LIGHT_GRAY);
         g2D.drawRect(40, 40, width-80, height-80);
@@ -71,13 +65,9 @@ public class MovementPanel extends javax.swing.JPanel {
             g2D.setColor(Color.black);
             g2D.draw(hunter.getVehicleShape());
         }
-<<<<<<< HEAD
         
         saturation = 0.9f;    //1.0 for brilliant, 0.0 for dull
         luminance = 1f;       //1.0 for brighter, 0.0 for black
-=======
-        g2D.drawRect(100, 100, width-200, height-200);
->>>>>>> 05eb2e554a8fc5fcc0242eff26920f7f2c1038b3
         //for (Vehicle m : preys){
         for (int i = 0; i < preys.size(); i++) {
             g2D.setColor(Color.getHSBColor(preys.get(i).getHue(), saturation, luminance));
@@ -159,26 +149,15 @@ public class MovementPanel extends javax.swing.JPanel {
             hunter = new Vehicle(new MVector(r.nextInt(width), r.nextInt(height)), new MVector(width, height));
             hunter.setScale(15);
             hunter.setMaxSpeed(5);
-<<<<<<< HEAD
             hunter.setMaxForce(0.4);
         }
         
         
-=======
-            hunter.setMaxForce(0.3);
-        }
-        
-        
->>>>>>> 05eb2e554a8fc5fcc0242eff26920f7f2c1038b3
         // add preys
         for (int i = 0; i < 10; i++) {
             Vehicle v = new Vehicle(new MVector(r.nextInt(width-100)+50, r.nextInt(height-100)+50), new MVector(width, height)); 
             v.setMaxSpeed(4);
-<<<<<<< HEAD
             v.setMaxForce(0.3);
-=======
-            v.setMaxForce(0.4);
->>>>>>> 05eb2e554a8fc5fcc0242eff26920f7f2c1038b3
             preys.add(v);
         }
         
@@ -230,7 +209,6 @@ public class MovementPanel extends javax.swing.JPanel {
                 if(!preys.get(i).KeepInsideBoundaries())
                 {
                     // looking whether a prey should flee from hunter
-<<<<<<< HEAD
                     if (distVector.getLength() < 30 + hunter.getScale() ) {
                         preys.get(i).Flee(hunter.getLocation());
                     }
@@ -246,18 +224,6 @@ public class MovementPanel extends javax.swing.JPanel {
                     
                 }
    
-=======
-                    if (distVector.getLength() < 250 + hunter.getScale() ) {
-                        preys.get(i).Flee(hunter.getLocation());
-                    }
-
-                    preys.get(i).Wander();
-
-                }
-                
-                
-                       
->>>>>>> 05eb2e554a8fc5fcc0242eff26920f7f2c1038b3
                 preys.get(i).Update();
                 
                 
