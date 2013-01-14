@@ -28,7 +28,7 @@ public class MovementPanel extends javax.swing.JPanel {
     public static Point mouseLocation;
     MVector desiredVector;
     
-    //MVector location;
+    //MVector preys.get(i).getLocation();
     //MVector speed;
     int width;
     int height;
@@ -40,7 +40,7 @@ public class MovementPanel extends javax.swing.JPanel {
     public MovementPanel() {
         initComponents();
         preys = new ArrayList();
-        m_timer = new Timer(30, new TimerAction());
+        m_timer = new Timer(25, new TimerAction());
         r = new Random();
         desiredVector = new MVector();
         
@@ -53,15 +53,21 @@ public class MovementPanel extends javax.swing.JPanel {
         
         Graphics2D g2D = (Graphics2D)g;
         g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        saturation = 0.9f;    //1.0 for brilliant, 0.0 for dull
-        luminance = 1f;       //1.0 for brighter, 0.0 for black
         
-        g2D.setColor(Color.black);
+        g2D.setColor(Color.LIGHT_GRAY);
+        g2D.drawRect(40, 40, width-80, height-80);
+        
+        
+        
         if (hunter != null) {
+            g2D.setColor(Color.white);
+            g2D.fill(hunter.getVehicleShape());
+            g2D.setColor(Color.black);
             g2D.draw(hunter.getVehicleShape());
         }
-
+        
+        saturation = 0.9f;    //1.0 for brilliant, 0.0 for dull
+        luminance = 1f;       //1.0 for brighter, 0.0 for black
         //for (Vehicle m : preys){
         for (int i = 0; i < preys.size(); i++) {
             g2D.setColor(Color.getHSBColor(preys.get(i).getHue(), saturation, luminance));
@@ -81,6 +87,7 @@ public class MovementPanel extends javax.swing.JPanel {
         buttonAction = new javax.swing.JButton();
         labelAmount = new javax.swing.JLabel();
         buttonPlayPause = new javax.swing.JButton();
+        labelHunter = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(255, 255, 255));
         addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
@@ -113,9 +120,11 @@ public class MovementPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(buttonAction)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(buttonPlayPause))
+                        .add(buttonPlayPause)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(labelHunter))
                     .add(labelAmount))
-                .addContainerGap(605, Short.MAX_VALUE))
+                .addContainerGap(599, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -125,26 +134,30 @@ public class MovementPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 509, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(buttonAction)
-                    .add(buttonPlayPause))
+                    .add(buttonPlayPause)
+                    .add(labelHunter))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void buttonActionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonActionActionPerformed
-        preys.clear();
+
         height = this.getHeight();
         width = this.getWidth();
         
-        hunter = new Vehicle(new MVector(r.nextInt(width), r.nextInt(height)), new MVector(width, height));
-        hunter.setScale(15);
-        hunter.setMaxSpeed(5);
-        hunter.setMaxForce(0.3);
+        if (hunter == null) {
+            hunter = new Vehicle(new MVector(r.nextInt(width), r.nextInt(height)), new MVector(width, height));
+            hunter.setScale(15);
+            hunter.setMaxSpeed(5);
+            hunter.setMaxForce(0.4);
+        }
         
-        // add 10 preys
-        for (int i = 0; i < 100; i++) {
-            Vehicle v = new Vehicle(new MVector(r.nextInt(width), r.nextInt(height)), new MVector(width, height)); 
-            v.setMaxSpeed(5);
-            v.setMaxForce(2);
+        
+        // add preys
+        for (int i = 0; i < 10; i++) {
+            Vehicle v = new Vehicle(new MVector(r.nextInt(width-100)+50, r.nextInt(height-100)+50), new MVector(width, height)); 
+            v.setMaxSpeed(4);
+            v.setMaxForce(0.3);
             preys.add(v);
         }
         
@@ -180,21 +193,70 @@ public class MovementPanel extends javax.swing.JPanel {
             double distance = 10000;
             MVector distVector;
             for (int i = 0; i < preys.size(); i++) {
-                preys.get(i).Wander();
+                
                 distVector = new MVector(hunter.getLocation().getX() - preys.get(i).getLocation().getX(), hunter.getLocation().getY() - preys.get(i).getLocation().getY());
+                
+                // finding what prey to hunt
                 if (distVector.getLength() < distance) {
                     distance = distVector.getLength();
                     preyToHunt = i;
                 }
-            }
-            
-            hunter.Seek(new MVector(preys.get(preyToHunt).getLocation().getX(),preys.get(preyToHunt).getLocation().getY()));
-            
-            if (hunter.getVehicleShape().intersects(preys.get(preyToHunt).getVehicleShape().getBounds2D())) {
-                preys.remove(preyToHunt);
-                labelAmount.setText("Population size: " + preys.size());
-            }
+                
 
+                
+                // now look at the boundaries
+                
+                if(!preys.get(i).KeepInsideBoundaries())
+                {
+                    // looking whether a prey should flee from hunter
+                    if (distVector.getLength() < 30 + hunter.getScale() ) {
+                        preys.get(i).Flee(hunter.getLocation());
+                    }
+                    else{
+                        if (distVector.getLength() < 300 + hunter.getScale() ) {
+                            preys.get(i).Flee(hunter.getLocation());
+                            preys.get(i).Wander();
+                        }
+                        else{
+                            preys.get(i).Wander();
+                        }
+                    }
+                    
+                }
+   
+                preys.get(i).Update();
+                
+                
+            }
+            
+            if (!preys.isEmpty()) {
+                if (!hunter.KeepInsideBoundaries()) {
+                    hunter.Seek(new MVector(preys.get(preyToHunt).getLocation().getX(),preys.get(preyToHunt).getLocation().getY()));
+                }
+                
+                
+                if (hunter.getVehicleShape().intersects(preys.get(preyToHunt).getVehicleShape().getBounds2D())) {
+                    preys.remove(preyToHunt);
+                    labelAmount.setText("Population size: " + preys.size());
+                    hunter.setScale(hunter.getScale() + 0.1);
+                    hunter.setMaxForce(hunter.getMaxForce() * 0.99);
+                    hunter.setMaxSpeed(hunter.getMaxSpeed() * 0.99);
+                }
+                else{
+                    hunter.setScale(hunter.getScale() - 0.002);
+                    hunter.setMaxForce(hunter.getMaxForce() * 1.0002);
+                    hunter.setMaxSpeed(hunter.getMaxSpeed() * 1.0002);
+                }
+            }
+            else{
+                if (!hunter.KeepInsideBoundaries()) {
+                    hunter.Wander();
+                }
+            }
+            
+            
+            hunter.Update();
+            UpdateHunterLabels();
             repaint();
             //Point mouseLocation = MouseInfo.getPointerInfo().getLocation();
             //for (Vehicle m : preys){
@@ -204,10 +266,13 @@ public class MovementPanel extends javax.swing.JPanel {
             //}
         }
     }
-    
+     private void UpdateHunterLabels(){
+         labelHunter.setText(String.format("Hunter maxspeed: %f, agility: %f, scale: %f", hunter.getMaxSpeed(), hunter.getMaxForce(), hunter.getScale()));
+     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonAction;
     private javax.swing.JButton buttonPlayPause;
     private javax.swing.JLabel labelAmount;
+    private javax.swing.JLabel labelHunter;
     // End of variables declaration//GEN-END:variables
 }

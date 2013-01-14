@@ -72,6 +72,10 @@ public class MVector {
         return new MVector(one.getX() / value, one.getY() / value);
     }
     
+    public static MVector Normalize(MVector one){
+        return new MVector(one.getX()/one.getLength(),one.getY()/one.getLength() );
+    }
+    
     public void Normalize(){
         this.Divide(this.getLength());
     }
