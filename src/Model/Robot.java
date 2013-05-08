@@ -8,7 +8,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.util.Random;
 
-public class Vehicle {
+public class Robot {
+    
     private MVector location;
     private MVector velocity;
     private MVector acceleration;
@@ -16,12 +17,14 @@ public class Vehicle {
     private MVector steer;
     private MVector pointToFleeFrom;
     private Random r;
-    private float hue;
+    private GeneralPath vehicleShape;
     private double angle, maxSpeed, maxForce, pointOnCircleAngle, vehicleScale;
     private int arriveDistanceistance ;
-    private GeneralPath vehicleShape;
-    
-    public Vehicle(MVector _location, MVector _bounds){
+    private Boolean state; // 0 for beacon, 1 for walker
+    private int foodCardinality;
+    private int nestCardinality;
+       
+    public Robot( MVector _location, MVector _bounds ){
         location = _location;
         bounds = _bounds;
         
@@ -35,45 +38,40 @@ public class Vehicle {
         steer = new MVector();
         pointToFleeFrom = new MVector();
         r = new Random();
-        hue = r.nextFloat();
+        
+        this.state = true;
+        this.foodCardinality = 0;
+        this.nestCardinality = 0;
+        
         vehicleShape = new GeneralPath();
     }
     
-    public MVector getPointToFleeFrom() {
-        return pointToFleeFrom;
-    }
+    
+    //  ---------- properties
+    
+    public Boolean getState() { return state; }
+    public void setState(Boolean state) { this.state = state; }
 
-    public void setPointToFleeFrom(MVector pointToFleeFrom) {
-        this.pointToFleeFrom = pointToFleeFrom;
-    }
+    public int getFoodCardinality() { return foodCardinality; }
+    public void setFoodCardinality(int foodCardinality) { this.foodCardinality = foodCardinality; }
+
+    public int getNestCardinality() { return nestCardinality; }
+    public void setNestCardinality(int nestCardinality) { this.nestCardinality = nestCardinality; }
     
-    public double getScale(){
-        return vehicleScale;
-    }
+    public MVector getPointToFleeFrom() { return pointToFleeFrom; }
+    public void setPointToFleeFrom(MVector pointToFleeFrom) { this.pointToFleeFrom = pointToFleeFrom; }
     
-    public void setScale(double scale){
-        vehicleScale = scale;
-    }
+    public double getScale() { return vehicleScale; }
+    public void setScale(double scale){ this.vehicleScale = scale; }
     
-    public void setMaxSpeed(double speed){
-        maxSpeed = speed;
-    }
-    public double getMaxSpeed(){
-        return maxSpeed;
-    }
-    
-    public void setMaxForce(double force){
-        maxForce = force;
-    }
-    public double getMaxForce(){
-        return maxForce;
-    }
-    
+    public double getMaxSpeed() { return maxSpeed; }
+    public void setMaxSpeed(double speed) { maxSpeed = speed; }
+
+    public double getMaxForce(){ return maxForce; }
+    public void setMaxForce(double force){ maxForce = force; }
+
     public MVector getLocation() { return location; }
     public void setLocation(MVector location) { this.location = location; }
-    
-    public float getHue() { return hue; }
-    public void setHue(float _hue) { this.hue = _hue; }
     
     public MVector getVelocity() { return velocity; }
     public void setVelocity(MVector velocity) { this.velocity = velocity; }
@@ -86,6 +84,10 @@ public class Vehicle {
     
     public MVector getAcceleration() { return acceleration; }
     public void setAcceleration(MVector acceleration) { this.acceleration = acceleration; }
+    
+    
+  
+    // ------ behaviors
     
     public void Wander(){
         // calculate the target as a random point on a circle in front of the vehicle
@@ -208,6 +210,17 @@ public class Vehicle {
     private void ApplyForce(MVector force){
         this.acceleration.Add(force);
     }
-
-
+    
+    
+    // ------- cardinality
+    
+    public void becomeBeacon() {
+        this.state = false;
+        this.foodCardinality = 0;
+        this.nestCardinality = 0;
+    }
+    
+    public void becomeWalker() {
+        this.state = true;
+    }
 }

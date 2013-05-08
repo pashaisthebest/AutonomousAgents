@@ -22,17 +22,17 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="movementPanel2" alignment="0" pref="1084" max="32767" attributes="0"/>
+          <Component id="movementPanel1" alignment="0" pref="1084" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="movementPanel2" alignment="0" pref="634" max="32767" attributes="0"/>
+          <Component id="movementPanel1" alignment="0" pref="634" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="View.MovementPanel" name="movementPanel2">
+    <Component class="View.MovementPanel" name="movementPanel1">
     </Component>
   </SubComponents>
 </Form>
