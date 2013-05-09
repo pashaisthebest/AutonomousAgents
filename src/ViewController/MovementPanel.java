@@ -2,22 +2,18 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package View;
+package ViewController;
 
-import Model.MVector;
-import Model.Robot;
-import Model.Nest;
+import Model.*;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Random;
 import javax.swing.Timer;
-import sun.nio.cs.ext.TIS_620;
 
 /**
  *
@@ -29,6 +25,8 @@ public class MovementPanel extends javax.swing.JPanel {
     public static final MVector NEST_LOCATION = new MVector(100, 100);
     
     ArrayList<Robot> robots;
+    Nest nest;
+    
     Timer m_timer;
     Random r;
 
@@ -52,6 +50,7 @@ public class MovementPanel extends javax.swing.JPanel {
         m_timer = new Timer(25, new TimerAction());
         r = new Random();
         robots = new ArrayList<>();
+        nest = new Nest(NEST_LOCATION);
     }
     
     @Override
@@ -61,13 +60,20 @@ public class MovementPanel extends javax.swing.JPanel {
         Graphics2D g2D = (Graphics2D)g;
         g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
+        // draw bounds
         g2D.setColor(Color.LIGHT_GRAY);
         g2D.drawRect(40, 40, this.getWidth()-80, this.getHeight()-80);
         
-        for (Robot robot : robots){
-            g2D.setColor(Color.BLACK);
-            g2D.fill(robot.getVehicleShape());
+        // draw nest with red
+        if (this.nest != null) {
+            this.nest.paintSelf(g2D);
         }
+        
+        // draw robots
+        for (Robot robot : robots){
+            robot.paintSelf(g2D);
+        }
+        
     }
 
     /**
@@ -140,9 +146,9 @@ public class MovementPanel extends javax.swing.JPanel {
         
         // add robots
         for (int i = 0; i < 10; i++) {
-            Robot v = new Robot(new MVector(r.nextInt(this.getWidth()-100)+50, r.nextInt(this.getHeight()-100)+50), new MVector(this.getWidth(), this.getHeight())); 
-            v.setMaxSpeed(4);
-            v.setMaxForce(0.3);
+            Robot v = new Robot(new MVector(this.nest.getLocation().getX(), this.nest.getLocation().getY()), new MVector(this.getWidth(), this.getHeight())); 
+            v.setMaxSpeed(2);
+            v.setMaxForce(0.05);
             robots.add(v);
         }
         
@@ -166,13 +172,11 @@ public class MovementPanel extends javax.swing.JPanel {
     
     
     private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentResized
-        // on resize go through al robots and set their bounds
+        // on resize go through all robots and set their bounds
         for (Robot robot : robots){
             robot.setBounds(new MVector(this.getWidth(), this.getHeight()));
         }
     }//GEN-LAST:event_formComponentResized
-
-
 
         class TimerAction implements ActionListener {
         @Override
@@ -182,17 +186,21 @@ public class MovementPanel extends javax.swing.JPanel {
                 //  look at the boundaries
                 if(!robots.get(i).KeepInsideBoundaries()){
                     robots.get(i).Wander();
-                }
+                }               
                 robots.get(i).Update(); 
             }
             
-            repaint();
+            
+            
             //Point mouseLocation = MouseInfo.getPointerInfo().getLocation();
             //for (Robot m : robots){
                 //m.Arrive(new MVector((int)MovementPanel.mouseLocation.getX(), (int)MovementPanel.mouseLocation.getY()));
                 //m.Wander();
                 //System.out.print(String.format("(%d,%d)", (int)desiredVector.getX(), (int)desiredVector.getY()));
             //}
+            
+            
+            repaint();
         }
     }
         

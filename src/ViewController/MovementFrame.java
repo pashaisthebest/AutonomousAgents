@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package View;
+package ViewController;
 
 /**
  *
@@ -26,9 +26,10 @@ public class MovementFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        movementPanel1 = new View.MovementPanel();
+        movementPanel1 = new ViewController.MovementPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setMinimumSize(new java.awt.Dimension(300, 300));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -79,6 +80,6 @@ public class MovementFrame extends javax.swing.JFrame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private View.MovementPanel movementPanel1;
+    private ViewController.MovementPanel movementPanel1;
     // End of variables declaration//GEN-END:variables
 }

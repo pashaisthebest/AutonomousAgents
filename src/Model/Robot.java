@@ -4,6 +4,8 @@
  */
 package Model;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.util.Random;
@@ -13,6 +15,7 @@ public class Robot {
     private MVector location;
     private MVector velocity;
     private MVector acceleration;
+    private MVector direction;
     private MVector bounds;
     private MVector steer;
     private MVector pointToFleeFrom;
@@ -20,7 +23,7 @@ public class Robot {
     private GeneralPath vehicleShape;
     private double angle, maxSpeed, maxForce, pointOnCircleAngle, vehicleScale;
     private int arriveDistanceistance ;
-    private Boolean state; // 0 for beacon, 1 for walker
+    private int state; // 0 for beacon, 1 for walker
     private int foodCardinality;
     private int nestCardinality;
        
@@ -35,11 +38,13 @@ public class Robot {
         
         velocity = new MVector();
         acceleration = new MVector();
+        direction = new MVector(1,0);
         steer = new MVector();
         pointToFleeFrom = new MVector();
+        
         r = new Random();
         
-        this.state = true;
+        this.state = 1;
         this.foodCardinality = 0;
         this.nestCardinality = 0;
         
@@ -48,9 +53,8 @@ public class Robot {
     
     
     //  ---------- properties
-    
-    public Boolean getState() { return state; }
-    public void setState(Boolean state) { this.state = state; }
+    public int getState() { return state; }
+    public void setState(int state) { this.state = state; }
 
     public int getFoodCardinality() { return foodCardinality; }
     public void setFoodCardinality(int foodCardinality) { this.foodCardinality = foodCardinality; }
@@ -71,7 +75,7 @@ public class Robot {
     public void setMaxForce(double force){ maxForce = force; }
 
     public MVector getLocation() { return location; }
-    public void setLocation(MVector location) { this.location = location; }
+    public void setLocation(MVector location) { this.location = location; this.updateShape();}
     
     public MVector getVelocity() { return velocity; }
     public void setVelocity(MVector velocity) { this.velocity = velocity; }
@@ -79,8 +83,8 @@ public class Robot {
     public MVector getBounds() { return bounds; }
     public void setBounds(MVector _bounds) { this.bounds = _bounds; }
     
-    public GeneralPath getVehicleShape() { return vehicleShape; }
-    public void setMoverShape(GeneralPath vehicleShape) { this.vehicleShape = vehicleShape; }
+    public GeneralPath getShape() { return vehicleShape; }
+    public void setShape(GeneralPath vehicleShape) { this.vehicleShape = vehicleShape; }
     
     public MVector getAcceleration() { return acceleration; }
     public void setAcceleration(MVector acceleration) { this.acceleration = acceleration; }
@@ -88,11 +92,10 @@ public class Robot {
     
   
     // ------ behaviors
-    
     public void Wander(){
         // calculate the target as a random point on a circle in front of the vehicle
         
-        MVector normilizedSpeed = new MVector(velocity.getX()+0.00001, velocity.getY()-0.00001);
+        MVector normilizedSpeed = new MVector(direction.getX(), direction.getY());
         normilizedSpeed.Normalize();
         normilizedSpeed.Multiply(100);
         
@@ -188,39 +191,50 @@ public class Robot {
     }
     
     public void Update(){
-        this.updateVehicleShape();
+        this.updateShape();
         velocity.Add(acceleration);
         velocity.Limit(maxSpeed);
         location.Add(velocity);
         acceleration.Multiply(0);
     }
+        
+    private void ApplyForce(MVector force){
+        this.acceleration.Add(force);
+    }
     
-    private void updateVehicleShape(){
+    // ------- drawing
+    public void paintSelf(Graphics2D g) {
+        g.setColor(Color.BLACK);
+        g.fill(this.getShape());
+    }
+    
+    private void updateShape(){
         vehicleShape.reset();
         vehicleShape.moveTo(location.getX() , location.getY() + 1.5 * vehicleScale);
         vehicleShape.lineTo(location.getX() + vehicleScale, location.getY() - vehicleScale );
         vehicleShape.lineTo(location.getX() - vehicleScale, location.getY() - vehicleScale);
         vehicleShape.closePath();
         AffineTransform rat = new AffineTransform();
-        angle = -1 * Math.atan2(velocity.getX(), velocity.getY()) ;
+        
+        // adjust direction if velocity is non-zero
+        if ((velocity.getX() != 0) && (velocity.getY() != 0)) {
+            direction.setX(velocity.getX());
+            direction.setY(velocity.getY());
+        }
+        
+        angle = -1 * Math.atan2(direction.getX(), direction.getY()) ;
         rat.rotate(angle, location.getX(), location.getY());
         vehicleShape.transform(rat);
     }
-    
-    private void ApplyForce(MVector force){
-        this.acceleration.Add(force);
-    }
-    
-    
+
     // ------- cardinality
-    
     public void becomeBeacon() {
-        this.state = false;
+        this.state = 0;
         this.foodCardinality = 0;
         this.nestCardinality = 0;
     }
     
     public void becomeWalker() {
-        this.state = true;
+        this.state = 1;
     }
 }
