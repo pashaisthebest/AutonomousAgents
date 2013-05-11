@@ -26,24 +26,111 @@ public class MovementFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        movementPanel1 = new ViewController.MovementPanel();
+        movementPanel = new ViewController.MovementPanel();
+        buttonAction = new javax.swing.JButton();
+        buttonPlayPause = new javax.swing.JButton();
+        buttonReset = new javax.swing.JButton();
+        toggleSensorsButton = new javax.swing.JToggleButton();
+        buttonRemoveObstacles = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setBackground(new java.awt.Color(255, 255, 255));
         setMinimumSize(new java.awt.Dimension(300, 300));
+
+        buttonAction.setLabel("Action");
+        buttonAction.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonActionActionPerformed(evt);
+            }
+        });
+
+        buttonPlayPause.setText("Play/pause");
+        buttonPlayPause.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonPlayPauseActionPerformed(evt);
+            }
+        });
+
+        buttonReset.setText("Reset");
+        buttonReset.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonResetActionPerformed(evt);
+            }
+        });
+
+        toggleSensorsButton.setSelected(true);
+        toggleSensorsButton.setText("Toggle sensors");
+        toggleSensorsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                toggleSensorsButtonActionPerformed(evt);
+            }
+        });
+
+        buttonRemoveObstacles.setText("Remove obstacles");
+        buttonRemoveObstacles.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonRemoveObstaclesActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(movementPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1084, Short.MAX_VALUE)
+            .add(movementPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1084, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(buttonAction)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(buttonPlayPause)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(buttonReset)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(buttonRemoveObstacles)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(toggleSensorsButton)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(movementPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 634, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(movementPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(buttonAction)
+                    .add(buttonPlayPause)
+                    .add(buttonReset)
+                    .add(toggleSensorsButton)
+                    .add(buttonRemoveObstacles))
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void buttonActionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonActionActionPerformed
+        this.movementPanel.startAction();
+    }//GEN-LAST:event_buttonActionActionPerformed
+
+    private void buttonPlayPauseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonPlayPauseActionPerformed
+        this.movementPanel.playPause();
+    }//GEN-LAST:event_buttonPlayPauseActionPerformed
+
+    private void buttonResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonResetActionPerformed
+        this.movementPanel.performReset();
+    }//GEN-LAST:event_buttonResetActionPerformed
+
+    private void toggleSensorsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleSensorsButtonActionPerformed
+        if (this.toggleSensorsButton.isSelected()) {
+            this.movementPanel.setSensorDrawingToggled(true);
+        } else {
+            this.movementPanel.setSensorDrawingToggled(false);
+        }
+    }//GEN-LAST:event_toggleSensorsButtonActionPerformed
+
+    private void buttonRemoveObstaclesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRemoveObstaclesActionPerformed
+        this.movementPanel.clearObstacles();
+    }//GEN-LAST:event_buttonRemoveObstaclesActionPerformed
 
     /**
      * @param args the command line arguments
@@ -80,6 +167,11 @@ public class MovementFrame extends javax.swing.JFrame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private ViewController.MovementPanel movementPanel1;
+    private javax.swing.JButton buttonAction;
+    private javax.swing.JButton buttonPlayPause;
+    private javax.swing.JButton buttonRemoveObstacles;
+    private javax.swing.JButton buttonReset;
+    private ViewController.MovementPanel movementPanel;
+    private javax.swing.JToggleButton toggleSensorsButton;
     // End of variables declaration//GEN-END:variables
 }

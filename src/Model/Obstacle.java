@@ -4,33 +4,31 @@
  */
 package Model;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.geom.GeneralPath;
 
 /**
  *
  * @author pashathebeast
  */
-public class ObstacleSensor {
-    
-    // the path that represents the sensor
+public class Obstacle {
+        // the path that represents the sensor
     private GeneralPath shape;
-    private Boolean state; // 0 - not triggered, 1- triggered
     
     public GeneralPath getShape() { return shape; }
     public void setShape(GeneralPath shape) { this.shape = shape; }
     
-    public Boolean getState() { return state; }
-    public void setState(Boolean state) { this.state = state; }
-    
-    public ObstacleSensor(GeneralPath _shape) {
+    public Obstacle(GeneralPath _shape) {
         shape = _shape;
-        state = false;
     }
     
-    public ObstacleSensor() {
+    public Obstacle() {
         shape = new GeneralPath();
-        state = false;
     }
-
-
+    
+    public void paintSelf(Graphics2D g) {
+        g.setColor(Color.BLUE);
+        g.fill(this.getShape());
+    }
 }

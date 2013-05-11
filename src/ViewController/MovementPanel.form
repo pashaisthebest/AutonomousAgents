@@ -7,7 +7,10 @@
     </Property>
   </Properties>
   <Events>
+    <EventHandler event="mousePressed" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="formMousePressed"/>
+    <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="formMouseReleased"/>
     <EventHandler event="componentResized" listener="java.awt.event.ComponentListener" parameters="java.awt.event.ComponentEvent" handler="formComponentResized"/>
+    <EventHandler event="mouseDragged" listener="java.awt.event.MouseMotionListener" parameters="java.awt.event.MouseEvent" handler="formMouseDragged"/>
   </Events>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
@@ -27,14 +30,11 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="labelAmount" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="buttonAction" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="buttonPlayPause" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="211" max="-2" attributes="0"/>
                       <Component id="labelHunter" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="labelAmount" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace pref="599" max="32767" attributes="0"/>
           </Group>
@@ -45,35 +45,15 @@
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Component id="labelAmount" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="509" max="32767" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="buttonAction" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="buttonPlayPause" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="labelHunter" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
+              <EmptySpace pref="538" max="32767" attributes="0"/>
+              <Component id="labelHunter" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JButton" name="buttonAction">
-      <Properties>
-        <Property name="label" type="java.lang.String" value="Action"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonActionActionPerformed"/>
-      </Events>
-    </Component>
     <Component class="javax.swing.JLabel" name="labelAmount">
-    </Component>
-    <Component class="javax.swing.JButton" name="buttonPlayPause">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="play/pause"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonPlayPauseActionPerformed"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="labelHunter">
     </Component>

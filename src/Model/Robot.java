@@ -8,6 +8,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Robot {
@@ -18,29 +19,39 @@ public class Robot {
     private MVector direction;
     private MVector bounds;
     private MVector steer;
-    private MVector pointToFleeFrom;
+    
     private Random r;
     private GeneralPath vehicleShape;
-    private double angle, maxSpeed, maxForce, pointOnCircleAngle, vehicleScale;
-    private int arriveDistanceistance ;
+    private double angle, maxSpeed, maxForce, maxWanderForce, pointOnCircleAngle, vehicleScale;
+    
     private int state; // 0 for beacon, 1 for walker
     private int foodCardinality;
     private int nestCardinality;
+    
+    private ObstacleSensor leftSensor;
+    private ObstacleSensor rightSensor;
+    
+    // this is the sensor that got activated first
+    private ObstacleSensor primarySensor;
+    
+    // -- do we really need this?
+    private MVector pointToFleeFrom;
+    private int arriveDistanceistance ;
        
     public Robot( MVector _location, MVector _bounds ){
         location = _location;
         bounds = _bounds;
         
-        maxSpeed = 8;
-        maxForce = 0.5;
+        maxSpeed = 1.5;
+        maxForce = 0.2;
+        maxWanderForce = 0.05;
         arriveDistanceistance = 130;
         vehicleScale = 10;
-        
         velocity = new MVector();
         acceleration = new MVector();
-        direction = new MVector(1,0);
         steer = new MVector();
         pointToFleeFrom = new MVector();
+        vehicleShape = new GeneralPath();
         
         r = new Random();
         
@@ -48,7 +59,11 @@ public class Robot {
         this.foodCardinality = 0;
         this.nestCardinality = 0;
         
-        vehicleShape = new GeneralPath();
+        direction = new MVector(1,0);
+        
+        leftSensor = new ObstacleSensor();
+        rightSensor = new ObstacleSensor();
+        primarySensor = new ObstacleSensor();
     }
     
     
@@ -99,7 +114,7 @@ public class Robot {
         normilizedSpeed.Normalize();
         normilizedSpeed.Multiply(100);
         
-        pointOnCircleAngle += r.nextDouble() -0.5;  
+        pointOnCircleAngle += r.nextDouble() - 0.5;  
         MVector pointOnCircle = new MVector(pointOnCircleAngle);
         pointOnCircle.Multiply(60);
         normilizedSpeed.Add(pointOnCircle);
@@ -109,7 +124,7 @@ public class Robot {
         desired.Limit(maxSpeed);
 
         steer = MVector.Subtract(desired, velocity);
-        steer.Limit(maxForce);
+        steer.Limit(maxWanderForce);
         ApplyForce(steer);
     }
     
@@ -127,7 +142,7 @@ public class Robot {
         steer = MVector.Subtract(velocity, desired);
         steer.Limit(maxForce);
         ApplyForce(steer);
-        //this.Update();
+    
     }
     
     public void Arrive(MVector target){
@@ -140,6 +155,7 @@ public class Robot {
         } 
         else{
             desired.Limit(maxSpeed);
+            
         }
        
         steer = MVector.Subtract(desired, velocity);
@@ -148,47 +164,102 @@ public class Robot {
         //this.Update();
     }
     
-    public boolean KeepInsideBoundaries(){
-        MVector desired = null;
+//    public boolean KeepInsideBoundaries(){
+//        MVector desired = null;
+//        
+//        if (location.getX()>bounds.getX()-40){  
+//            desired = new MVector(-maxSpeed, velocity.getY());
+//            //location.setX(50);
+//            //velocity.setX(velocity.getX() * -1);
+//        }
+//        else{
+//            if(location.getX()<40){
+//                desired = new MVector(maxSpeed, velocity.getY());
+//                //location.setX(bounds.getX()-50);
+//                //velocity.setX(velocity.getX() * -1);
+//            }
+//        }
+//        if (location.getY()>bounds.getY()-40){
+//            desired = new MVector(velocity.getX(), -maxSpeed);
+//            //location.setY(50);
+//            //velocity.setY(velocity.getY() * -1);
+//        }
+//        else{
+//            if(location.getY()<40){
+//                desired = new MVector(velocity.getX(), maxSpeed);
+//                //location.setY(bounds.getY()-50);
+//                //velocity.setY(velocity.getY() * -1);
+//            }
+//        }
+//        
+//        if (desired != null) {
+//            
+//            desired.Normalize();
+//            desired.Multiply(maxSpeed);
+//
+//            steer = MVector.Subtract(desired, velocity);
+//            steer.Limit(maxForce);
+//            this.ApplyForce(steer);
+//            
+//            return true;
+//        }
+//        return false;
+//    }
+    
+    public Boolean avoidObstacles(ArrayList<GeneralPath> obstacles) {
         
-        if (location.getX()>bounds.getX()-40){  
-            desired = new MVector(-maxSpeed, velocity.getY());
-            //location.setX(50);
-            //velocity.setX(velocity.getX() * -1);
-        }
-        else{
-            if(location.getX()<40){
-                desired = new MVector(maxSpeed, velocity.getY());
-                //location.setX(bounds.getX()-50);
-                //velocity.setX(velocity.getX() * -1);
+        boolean rightSensorStateBeforeUpdate = rightSensor.getState();
+        boolean leftSensorStateBeforeUpdate = leftSensor.getState();
+        
+        rightSensor.setState(false);
+        leftSensor.setState(false);
+        
+        for (GeneralPath obstacle : obstacles) {
+            if (rightSensor.getShape().intersects(obstacle.getBounds2D())) {
+                rightSensor.setState(true);
+            }
+            if (leftSensor.getShape().intersects(obstacle.getBounds2D())) {
+                leftSensor.setState(true);
             }
         }
-        if (location.getY()>bounds.getY()-40){
-            desired = new MVector(velocity.getX(), -maxSpeed);
-            //location.setY(50);
-            //velocity.setY(velocity.getY() * -1);
-        }
-        else{
-            if(location.getY()<40){
-                desired = new MVector(velocity.getX(), maxSpeed);
-                //location.setY(bounds.getY()-50);
-                //velocity.setY(velocity.getY() * -1);
+        
+        MVector obstaclePointToFleeFrom = new MVector();
+        
+        if (leftSensor.getState()) {
+            obstaclePointToFleeFrom.setX(leftSensor.getShape().getCurrentPoint().getX());
+            obstaclePointToFleeFrom.setY(leftSensor.getShape().getCurrentPoint().getY());
+            if ( (primarySensor != null) && (primarySensor != rightSensor)) {
+                primarySensor = leftSensor;
+            }
+        } 
+                
+        if (rightSensor.getState()) {
+            obstaclePointToFleeFrom.setX(rightSensor.getShape().getCurrentPoint().getX());
+            obstaclePointToFleeFrom.setY(rightSensor.getShape().getCurrentPoint().getY());
+            if ( (primarySensor != null) && (primarySensor != leftSensor)) {
+                primarySensor = rightSensor;
             }
         }
         
-        if (desired != null) {
-            
-            desired.Normalize();
-            desired.Multiply(maxSpeed);
-
-            steer = MVector.Subtract(desired, velocity);
-            steer.Limit(maxForce);
-            this.ApplyForce(steer);
-            
+        if (rightSensor.getState() && leftSensor.getState()) {
+            obstaclePointToFleeFrom.setX(primarySensor.getShape().getCurrentPoint().getX());
+            obstaclePointToFleeFrom.setY(primarySensor.getShape().getCurrentPoint().getY());
+        }
+        
+        
+        if (leftSensor.getState() || rightSensor.getState()) {
+            maxSpeed = 0.6;
+            maxForce = 0.15;
+            this.Flee(obstaclePointToFleeFrom);
             return true;
+        } else {
+            maxSpeed = 1.5;
+            maxForce = 0.2;
         }
+        
         return false;
     }
+    
     
     public void Update(){
         this.updateShape();
@@ -203,18 +274,38 @@ public class Robot {
     }
     
     // ------- drawing
-    public void paintSelf(Graphics2D g) {
+    public void paintSelf(Graphics2D g, Boolean sensorsToggled) {
+        
+        if (sensorsToggled) {
+            if (leftSensor.getState()) {
+                g.setColor(Color.RED);
+            } else {
+                g.setColor(Color.LIGHT_GRAY);
+            }
+            g.draw(leftSensor.getShape());
+
+
+            if (rightSensor.getState()) {
+                g.setColor(Color.RED);
+            } else {
+                g.setColor(Color.LIGHT_GRAY);
+            }
+            g.draw(rightSensor.getShape());
+        }
+        
         g.setColor(Color.BLACK);
         g.fill(this.getShape());
+        
     }
     
     private void updateShape(){
+        // update shape of the vehicle
         vehicleShape.reset();
         vehicleShape.moveTo(location.getX() , location.getY() + 1.5 * vehicleScale);
         vehicleShape.lineTo(location.getX() + vehicleScale, location.getY() - vehicleScale );
         vehicleShape.lineTo(location.getX() - vehicleScale, location.getY() - vehicleScale);
         vehicleShape.closePath();
-        AffineTransform rat = new AffineTransform();
+        
         
         // adjust direction if velocity is non-zero
         if ((velocity.getX() != 0) && (velocity.getY() != 0)) {
@@ -223,8 +314,34 @@ public class Robot {
         }
         
         angle = -1 * Math.atan2(direction.getX(), direction.getY()) ;
+        AffineTransform rat = new AffineTransform();
         rat.rotate(angle, location.getX(), location.getY());
         vehicleShape.transform(rat);
+        
+        // now update shapes of the obstacle sensors        
+        GeneralPath rightSensorShape = rightSensor.getShape();
+        rightSensorShape.reset();
+        rightSensorShape.moveTo(location.getX() - vehicleScale, location.getY() + 2 * vehicleScale);
+        rightSensorShape.lineTo(location.getX() - vehicleScale*0.25, location.getY() + vehicleScale);
+        rightSensorShape.lineTo(location.getX() - vehicleScale*0.5, location.getY() + 2.25*vehicleScale);
+        //rightSensorShape.moveTo(location.getX() - vehicleScale*2.75, location.getY() + 1.5 * vehicleScale);
+        //rightSensorShape.lineTo(location.getX() - vehicleScale*1.5, location.getY() + 2.75 * vehicleScale);
+        //rightSensorShape.lineTo(location.getX(), location.getY());
+        rightSensorShape.closePath();
+        rightSensorShape.transform(rat);
+        
+        GeneralPath leftSensorShape = leftSensor.getShape();
+        leftSensorShape.reset();
+        leftSensorShape.moveTo(location.getX() + vehicleScale, location.getY() + 2 * vehicleScale);
+        leftSensorShape.lineTo(location.getX() + vehicleScale*0.25, location.getY() + vehicleScale);
+        leftSensorShape.lineTo(location.getX() + vehicleScale*0.5, location.getY() + 2.25*vehicleScale);
+        //leftSensorShape.moveTo(location.getX() + vehicleScale*2.75, location.getY() + 1.5 * vehicleScale);
+        //leftSensorShape.lineTo(location.getX() + vehicleScale*1.5, location.getY() + 2.75 * vehicleScale);
+        //leftSensorShape.lineTo(location.getX(), location.getY());
+        leftSensorShape.closePath();
+        leftSensorShape.transform(rat);
+        
+        
     }
 
     // ------- cardinality

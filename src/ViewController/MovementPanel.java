@@ -5,42 +5,43 @@
 package ViewController;
 
 import Model.*;
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Random;
 import javax.swing.Timer;
 
 /**
- *
  * @author pashathebeast
  */
 
-
 public class MovementPanel extends javax.swing.JPanel {
     public static final MVector NEST_LOCATION = new MVector(100, 100);
+    public static final int WALL_THICKNESS = 30;
+    
+    Boolean toggleSensorsDrawing;
     
     ArrayList<Robot> robots;
+    ArrayList<Obstacle> obstacles;
     Nest nest;
     
     Timer m_timer;
     Random r;
 
-//    public static Point mouseLocation;
-//    MVector desiredVector;
+    // dragging business
+    private Point initLocation;
+    private Point initMouseLocationOnScreen;
+    private Obstacle obstacleBeingDrawn;
     
-//    private Integer panelWidth;
-//    private Integer panelHeight;
-    
-//    public int getPanelWidth() { return panelWidth; }
-//    public void setPanelWidth(int panelWidth) { this.panelWidth = panelWidth; }
-//
-//    public int getPanelHeight() { return panelHeight; }
-//    public void setPanelHeight(int panelHeight) { this.panelHeight = panelHeight; }
+    // properties
+    public Boolean isSensorDrawingToggled() { return toggleSensorsDrawing; }
+    public void setSensorDrawingToggled(Boolean isToggled) {this.toggleSensorsDrawing = isToggled; }
     
     /**
      * Creates new form MovementPanel
@@ -51,6 +52,8 @@ public class MovementPanel extends javax.swing.JPanel {
         r = new Random();
         robots = new ArrayList<>();
         nest = new Nest(NEST_LOCATION);
+        obstacles = new ArrayList<>();
+        toggleSensorsDrawing = true;
     }
     
     @Override
@@ -60,20 +63,30 @@ public class MovementPanel extends javax.swing.JPanel {
         Graphics2D g2D = (Graphics2D)g;
         g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
-        // draw bounds
-        g2D.setColor(Color.LIGHT_GRAY);
-        g2D.drawRect(40, 40, this.getWidth()-80, this.getHeight()-80);
-        
         // draw nest with red
         if (this.nest != null) {
             this.nest.paintSelf(g2D);
         }
         
-        // draw robots
-        for (Robot robot : robots){
-            robot.paintSelf(g2D);
+        if (obstacleBeingDrawn != null) {
+            obstacleBeingDrawn.paintSelf(g2D);
         }
         
+        // draw obstacles
+        for (Obstacle obstacle : this.obstacles) {
+            obstacle.paintSelf(g2D);
+        }
+        
+        // draw robots
+        for (Robot robot : robots){
+            robot.paintSelf(g2D, this.toggleSensorsDrawing);
+        }
+    }
+    
+    public void clearObstacles() {
+        this.obstacles.clear();
+        this.AddWalls();
+        this.repaint();
     }
 
     /**
@@ -85,29 +98,26 @@ public class MovementPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        buttonAction = new javax.swing.JButton();
         labelAmount = new javax.swing.JLabel();
-        buttonPlayPause = new javax.swing.JButton();
         labelHunter = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(255, 255, 255));
+        addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                formMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                formMouseReleased(evt);
+            }
+        });
         addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent evt) {
                 formComponentResized(evt);
             }
         });
-
-        buttonAction.setLabel("Action");
-        buttonAction.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonActionActionPerformed(evt);
-            }
-        });
-
-        buttonPlayPause.setText("play/pause");
-        buttonPlayPause.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonPlayPauseActionPerformed(evt);
+        addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseDragged(java.awt.event.MouseEvent evt) {
+                formMouseDragged(evt);
             }
         });
 
@@ -118,13 +128,10 @@ public class MovementPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(labelAmount)
                     .add(layout.createSequentialGroup()
-                        .add(buttonAction)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(buttonPlayPause)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(labelHunter))
-                    .add(labelAmount))
+                        .add(211, 211, 211)
+                        .add(labelHunter)))
                 .addContainerGap(599, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -132,23 +139,24 @@ public class MovementPanel extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(labelAmount)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 509, Short.MAX_VALUE)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(buttonAction)
-                    .add(buttonPlayPause)
-                    .add(labelHunter))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 538, Short.MAX_VALUE)
+                .add(labelHunter)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void buttonActionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonActionActionPerformed
-
-        
+    public void performReset() {
+        robots.clear();
+        if (m_timer.isRunning()) {
+            m_timer.stop();
+        }
+        repaint();
+    }
+    
+    public void startAction() {
         // add robots
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 1; i++) {
             Robot v = new Robot(new MVector(this.nest.getLocation().getX(), this.nest.getLocation().getY()), new MVector(this.getWidth(), this.getHeight())); 
-            v.setMaxSpeed(2);
-            v.setMaxForce(0.05);
             robots.add(v);
         }
         
@@ -156,57 +164,145 @@ public class MovementPanel extends javax.swing.JPanel {
         if (!m_timer.isRunning()) {
             m_timer.start();
         }
-
-    }//GEN-LAST:event_buttonActionActionPerformed
-
+    }
     
-    private void buttonPlayPauseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonPlayPauseActionPerformed
+    public void playPause() {
         if (!m_timer.isRunning()) {
             m_timer.start();
         }
         else{
             m_timer.stop();
-        }
-    }//GEN-LAST:event_buttonPlayPauseActionPerformed
-
+        }        
+    }
     
+    public void AddWalls() {
+        GeneralPath leftWallPath = new GeneralPath();
+        leftWallPath.moveTo(0, 0);
+        leftWallPath.lineTo(WALL_THICKNESS, 0);
+        leftWallPath.lineTo(WALL_THICKNESS, this.getHeight());
+        leftWallPath.lineTo(0, this.getHeight());
+        leftWallPath.closePath();
+        
+        GeneralPath rightWallPath = new GeneralPath();
+        rightWallPath.moveTo(this.getWidth(), 0);
+        rightWallPath.lineTo(this.getWidth(), this.getHeight());
+        rightWallPath.lineTo(this.getWidth() - WALL_THICKNESS, this.getHeight());
+        rightWallPath.lineTo(this.getWidth() - WALL_THICKNESS, 0);
+        rightWallPath.closePath();
+        
+        GeneralPath topWallPath = new GeneralPath();
+        topWallPath.moveTo(WALL_THICKNESS, 0);
+        topWallPath.lineTo(this.getWidth() - WALL_THICKNESS, 0);
+        topWallPath.lineTo(this.getWidth() - WALL_THICKNESS, WALL_THICKNESS);
+        topWallPath.lineTo(WALL_THICKNESS, WALL_THICKNESS);
+        topWallPath.closePath();
+        
+        GeneralPath bottomWallPath = new GeneralPath();
+        bottomWallPath.moveTo(WALL_THICKNESS, this.getHeight());
+        bottomWallPath.lineTo(this.getWidth() - WALL_THICKNESS, this.getHeight());
+        bottomWallPath.lineTo(this.getWidth() - WALL_THICKNESS, this.getHeight() - WALL_THICKNESS);
+        bottomWallPath.lineTo(WALL_THICKNESS, this.getHeight() - WALL_THICKNESS);
+        bottomWallPath.closePath();
+        
+        Obstacle leftWall = new Obstacle(leftWallPath);
+        Obstacle rightWall = new Obstacle(rightWallPath);
+        Obstacle topWall = new Obstacle(topWallPath);
+        Obstacle bottomWall = new Obstacle(bottomWallPath);
+        
+        
+        obstacles.add(0, leftWall);
+        obstacles.add(0, rightWall);
+        obstacles.add(0, topWall);
+        obstacles.add(0, bottomWall);
+    }
     
     private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentResized
         // on resize go through all robots and set their bounds
         for (Robot robot : robots){
             robot.setBounds(new MVector(this.getWidth(), this.getHeight()));
         }
+        
+        System.out.print(String.format("resized. this height is %d", this.getHeight()));
+        // remove walls before adding them again  
+        if (!obstacles.isEmpty()) {
+            for (int i=0; i<4; i++) {
+                 this.obstacles.remove(0);
+            }
+        }
+        
+        // add walls
+        this.AddWalls();
+        repaint();
     }//GEN-LAST:event_formComponentResized
+
+    private void formMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMousePressed
+        if (this.robots.isEmpty()) {
+            initLocation = this.getMousePosition();
+            obstacleBeingDrawn = new Obstacle();
+        }
+    }//GEN-LAST:event_formMousePressed
+
+    private void formMouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseDragged
+        Point currentMouseLocation = this.getMousePosition();
+        if (initLocation != null && currentMouseLocation!= null) {
+            // get current mouse location
+            GeneralPath obstacleBeingDrawnPath = new GeneralPath();
+            obstacleBeingDrawnPath.reset();
+            obstacleBeingDrawnPath.moveTo(initLocation.x, initLocation.y);
+            obstacleBeingDrawnPath.lineTo(currentMouseLocation.x, initLocation.y);
+            obstacleBeingDrawnPath.lineTo(currentMouseLocation.x, currentMouseLocation.y);
+            obstacleBeingDrawnPath.lineTo(initLocation.x, currentMouseLocation.y);
+            obstacleBeingDrawnPath.closePath();         
+            obstacleBeingDrawn.setShape(obstacleBeingDrawnPath);
+            
+            this.repaint();
+        }
+    }//GEN-LAST:event_formMouseDragged
+
+    private void formMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseReleased
+        if (obstacleBeingDrawn != null) {
+            obstacles.add(new Obstacle(obstacleBeingDrawn.getShape()));
+        }
+        
+        obstacleBeingDrawn = null;
+        initLocation = null;
+    }//GEN-LAST:event_formMouseReleased
 
         class TimerAction implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             
-            for (int i = 0; i < robots.size(); i++) {
+            for (Robot robot : robots) {
                 //  look at the boundaries
-                if(!robots.get(i).KeepInsideBoundaries()){
-                    robots.get(i).Wander();
-                }               
-                robots.get(i).Update(); 
+                ArrayList<GeneralPath> currentObstacles = new ArrayList<>();
+                for (Robot obstacle : robots) {
+                    if (obstacle != robot) {
+                        currentObstacles.add(obstacle.getShape());
+                    }
+                }
+                for (Obstacle obs : obstacles) {
+                   currentObstacles.add(obs.getShape());
+                }
+                
+                if(!robot.avoidObstacles(currentObstacles)){
+                    robot.Wander();
+                }
+                
+                robot.Update();
             }
             
-            
-            
+           
             //Point mouseLocation = MouseInfo.getPointerInfo().getLocation();
             //for (Robot m : robots){
                 //m.Arrive(new MVector((int)MovementPanel.mouseLocation.getX(), (int)MovementPanel.mouseLocation.getY()));
                 //m.Wander();
                 //System.out.print(String.format("(%d,%d)", (int)desiredVector.getX(), (int)desiredVector.getY()));
             //}
-            
-            
             repaint();
         }
     }
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton buttonAction;
-    private javax.swing.JButton buttonPlayPause;
     private javax.swing.JLabel labelAmount;
     private javax.swing.JLabel labelHunter;
     // End of variables declaration//GEN-END:variables
