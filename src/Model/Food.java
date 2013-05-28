@@ -12,16 +12,17 @@ import java.awt.geom.GeneralPath;
  *
  * @author pashathebeast
  */
-public class Nest {
+public class  Food {
     // ----- constants
-    private final int DEFAULT_SIZE = 20;
-    private final int MAX_FOOD_AMOUNT = 100;
+    private static final int DEFAULT_SIZE = 20;
+    private static final int DEFAULT_FOOD_AMOUNT = 100;
     
     // ----- fields
     private MVector location;
     private int foodAmount;
     private int size;
     private GeneralPath shape;
+    private Boolean isOccupied;
     
     // ----- properties
     public MVector getLocation() { return location; }
@@ -29,43 +30,46 @@ public class Nest {
     
     public GeneralPath getShape() { return shape; }
     public void setShape(GeneralPath shape) { this.shape = shape; }
-        
+    
     public int getFoodAmount() { return foodAmount; }
     public void setFoodAmount(int foodCount) { this.foodAmount = foodCount; }
     
-    public int maxFoodAmount() {
-        return MAX_FOOD_AMOUNT;
-    }
+    public Boolean isOccupied() { return isOccupied; }
+    public void setOccupied(Boolean isOccupied) { this.isOccupied = isOccupied; }
     
     // ----- initializers
-    public Nest(MVector _location) {
+    public Food(MVector _location) {
         // set location
         this.location = _location;
         // and shape
         this.shape = new GeneralPath();
+        this.size = DEFAULT_SIZE;
+        this.foodAmount = DEFAULT_FOOD_AMOUNT;
+        this.isOccupied = false;
         this.updateShape();
-        this.foodAmount = 0;
     }
 
+    
     // ------- drawing
     public void paintSelf(Graphics2D g) {
-        g.setColor(Color.RED);
+        
+        if (this.isOccupied) { g.setColor(Color.YELLOW); }
+        else { g.setColor(Color.GREEN); }
         g.fill(this.getShape());
         
-        
         g.setColor(Color.WHITE);
-        double rate = (double)this.foodAmount/(double)MAX_FOOD_AMOUNT;
-        g.fillOval((int)(this.location.getX() - (rate*DEFAULT_SIZE)), (int)(this.location.getY() - (rate*DEFAULT_SIZE)), 
+        double rate = (double)this.foodAmount/(double)DEFAULT_FOOD_AMOUNT;
+        g.fillOval((int)this.location.getX() - (int)(rate*DEFAULT_SIZE), (int)this.location.getY() - (int)(rate*DEFAULT_SIZE), 
                     (int)(DEFAULT_SIZE*2*rate), (int)(DEFAULT_SIZE*2*rate));
     }
     
     private void updateShape(){
         this.shape.reset();
-        this.shape.moveTo(this.location.getX() - DEFAULT_SIZE , this.location.getY() -DEFAULT_SIZE);
-        this.shape.lineTo(this.location.getX() + DEFAULT_SIZE, this.location.getY() - DEFAULT_SIZE);
-        this.shape.lineTo(this.location.getX() + DEFAULT_SIZE, this.location.getY() + DEFAULT_SIZE);
-        this.shape.lineTo(this.location.getX() - DEFAULT_SIZE, this.location.getY() + DEFAULT_SIZE);
+        this.shape.moveTo(this.location.getX() - this.size, this.location.getY() - this.size);
+        this.shape.lineTo(this.location.getX() + this.size, this.location.getY() - this.size);
+        this.shape.lineTo(this.location.getX() + this.size, this.location.getY() + this.size);
+        this.shape.lineTo(this.location.getX() - this.size, this.location.getY() + this.size);
         this.shape.closePath();
-    }
-    
+    }    
+
 }

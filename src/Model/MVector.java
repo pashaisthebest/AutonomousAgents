@@ -76,6 +76,10 @@ public class MVector {
         return new MVector(one.getX()/one.getLength(),one.getY()/one.getLength() );
     }
     
+    public static double Distance(MVector one, MVector two) {
+        return Math.sqrt(Math.pow((one.x - two.x), 2) + Math.pow((one.y - two.y), 2));
+    }
+    
     public void Normalize(){
         this.Divide(this.getLength());
     }

@@ -13,7 +13,7 @@ import java.awt.geom.GeneralPath;
  * @author pashathebeast
  */
 public class Obstacle {
-        // the path that represents the sensor
+    // the shape of the obstacle
     private GeneralPath shape;
     
     public GeneralPath getShape() { return shape; }

@@ -11,8 +11,9 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.awt.geom.GeneralPath;
-import java.awt.geom.Rectangle2D;
+import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Random;
 import javax.swing.Timer;
@@ -22,6 +23,8 @@ import javax.swing.Timer;
  */
 
 public class MovementPanel extends javax.swing.JPanel {
+    private static final int RADIO_RADIUS = 200;
+    
     public static final MVector NEST_LOCATION = new MVector(100, 100);
     public static final int WALL_THICKNESS = 30;
     
@@ -30,6 +33,7 @@ public class MovementPanel extends javax.swing.JPanel {
     ArrayList<Robot> robots;
     ArrayList<Obstacle> obstacles;
     Nest nest;
+    Food food;
     
     Timer m_timer;
     Random r;
@@ -66,6 +70,11 @@ public class MovementPanel extends javax.swing.JPanel {
         // draw nest with red
         if (this.nest != null) {
             this.nest.paintSelf(g2D);
+        }
+
+        // draw nest with red
+        if (this.food != null) {
+            this.food.paintSelf(g2D);
         }
         
         if (obstacleBeingDrawn != null) {
@@ -155,15 +164,19 @@ public class MovementPanel extends javax.swing.JPanel {
     
     public void startAction() {
         // add robots
-        for (int i = 0; i < 1; i++) {
-            Robot v = new Robot(new MVector(this.nest.getLocation().getX(), this.nest.getLocation().getY()), new MVector(this.getWidth(), this.getHeight())); 
-            robots.add(v);
-        }
+        
+        Robot r1 = new Robot(new MVector(this.nest.getLocation().getX()+15, this.nest.getLocation().getY()), new MVector(1, 0));     
+        robots.add(r1);
+        Robot r2 = new Robot(new MVector(this.nest.getLocation().getX(), this.nest.getLocation().getY() - 15), new MVector(0, -1));     
+        robots.add(r2);
+        Robot r3 = new Robot(new MVector(this.nest.getLocation().getX()-15, this.nest.getLocation().getY()), new MVector(-1, 0));     
+        robots.add(r3);
+        Robot r4 = new Robot(new MVector(this.nest.getLocation().getX(), this.nest.getLocation().getY()+15), new MVector(0, 1));     
+        robots.add(r4);
+        repaint();
         
         labelAmount.setText("Population size: " + robots.size());
-        if (!m_timer.isRunning()) {
-            m_timer.start();
-        }
+        m_timer.start();
     }
     
     public void playPause() {
@@ -217,28 +230,28 @@ public class MovementPanel extends javax.swing.JPanel {
     }
     
     private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentResized
-        // on resize go through all robots and set their bounds
-        for (Robot robot : robots){
-            robot.setBounds(new MVector(this.getWidth(), this.getHeight()));
-        }
-        
-        System.out.print(String.format("resized. this height is %d", this.getHeight()));
+
         // remove walls before adding them again  
         if (!obstacles.isEmpty()) {
             for (int i=0; i<4; i++) {
                  this.obstacles.remove(0);
             }
-        }
-        
+        } 
         // add walls
         this.AddWalls();
         repaint();
     }//GEN-LAST:event_formComponentResized
 
     private void formMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMousePressed
-        if (this.robots.isEmpty()) {
-            initLocation = this.getMousePosition();
-            obstacleBeingDrawn = new Obstacle();
+        if (evt.getButton() == MouseEvent.BUTTON3) {
+            food = new Food(new MVector(evt.getX(), evt.getY()));
+            this.repaint();
+        } 
+        else {
+            if (this.robots.isEmpty()) {
+                initLocation = this.getMousePosition();
+                obstacleBeingDrawn = new Obstacle();        
+            }
         }
     }//GEN-LAST:event_formMousePressed
 
@@ -274,30 +287,40 @@ public class MovementPanel extends javax.swing.JPanel {
             
             for (Robot robot : robots) {
                 //  look at the boundaries
-                ArrayList<GeneralPath> currentObstacles = new ArrayList<>();
-                for (Robot obstacle : robots) {
-                    if (obstacle != robot) {
-                        currentObstacles.add(obstacle.getShape());
+                ArrayList<Robot> neighbours = new ArrayList<>();
+                for (Robot neighbour : robots) {
+                    //calculate distance between them 
+                    
+                    
+                    GeneralPath pathBetweenRobots = new GeneralPath();
+                    pathBetweenRobots.moveTo(robot.getLocation().getX(), robot.getLocation().getY());
+                    pathBetweenRobots.lineTo(neighbour.getLocation().getX(), neighbour.getLocation().getY());
+                    pathBetweenRobots.closePath();
+                    
+                    Boolean pathBetweenRobotsIntersectsObstacles = false;
+                    for (Obstacle obstacle : obstacles) {
+                        if (pathBetweenRobots.intersects(obstacle.getShape().getBounds())) {
+                            pathBetweenRobotsIntersectsObstacles = true;
+                        }
+                    }
+                    
+
+                    
+                    
+                    if ((neighbour != robot) && (MVector.Distance(neighbour.getLocation(), robot.getLocation()) < RADIO_RADIUS) && !pathBetweenRobotsIntersectsObstacles) {
+                        neighbours.add(neighbour);
                     }
                 }
-                for (Obstacle obs : obstacles) {
-                   currentObstacles.add(obs.getShape());
-                }
-                
-                if(!robot.avoidObstacles(currentObstacles)){
-                    robot.Wander();
-                }
-                
-                robot.Update();
+                robot.Update(neighbours, obstacles, nest, food);
             }
             
-           
             //Point mouseLocation = MouseInfo.getPointerInfo().getLocation();
             //for (Robot m : robots){
                 //m.Arrive(new MVector((int)MovementPanel.mouseLocation.getX(), (int)MovementPanel.mouseLocation.getY()));
                 //m.Wander();
                 //System.out.print(String.format("(%d,%d)", (int)desiredVector.getX(), (int)desiredVector.getY()));
             //}
+
             repaint();
         }
     }
